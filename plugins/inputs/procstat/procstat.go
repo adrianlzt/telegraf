@@ -11,6 +11,7 @@ import (
 
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/plugins/inputs"
+	"github.com/shirou/gopsutil/net"
 	"github.com/shirou/gopsutil/process"
 )
 
@@ -261,6 +262,11 @@ func (p *Procstat) addMetric(proc Process, acc telegraf.Accumulator) {
 				fields[prefix+name] = rlim.Used
 			}
 		}
+	}
+
+	tcpCons, err := net.ConnectionsPid("tcp", int32(proc.PID()))
+	if err == nil {
+		fields[prefix+"num_tcp_conn"] = len(tcpCons)
 	}
 
 	acc.AddFields("procstat", fields, proc.Tags())
